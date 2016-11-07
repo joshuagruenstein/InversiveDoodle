@@ -53,22 +53,20 @@ function onPointChange() {
     // invert image
 
     // NOTE: CAN'T HANDLE FLIPPING
-    pixelArray = ctx.getImageData(0,0,c.width,c.height).data;
+    var imageData = ctx.getImageData(0,0,c.width,c.height);
     for (var x = Math.round(points[2].x); x < points[3].x; x++) {
         for (var y = Math.round(points[2].y); y < points[3].y; y++) {
-            if (x==points[2].x && y==points[2].y) {
-                console.log(y);
-                console.log((y*c.width + x)*4);
-            }
-            var r = pixelArray[(y*c.width + x)*4];
-            var g = pixelArray[(y*c.width + x)*4 + 1];
-            var b = pixelArray[(y*c.width + x)*4 + 2];
+            var r = imageData.data[(y*c.width + x)*4];
+            var g = imageData.data[(y*c.width + x)*4 + 1];
+            var b = imageData.data[(y*c.width + x)*4 + 2];
 
             var newPoint = invertPoint(points[0].x,points[0].y,radius,x,y);
-            ctx.fillStyle = "rgb("+r+","+g+","+b+")";
-            ctx.fillRect(newPoint.x,newPoint.y,1,1);
+            var arrayIndex = (newPoint.y*c.width + newPoint.x)*4;
+            imageData.data[arrayIndex] = r;
+            imageData.data[arrayIndex+1] = g;
+            imageData.data[arrayIndex+2] = b;
         }
-    }
+    } ctx.putImageData(imageData,0,0);
 
     // draw points
     for (var i=0; i<points.length; i++) points[i].drawToContext(ctx);
