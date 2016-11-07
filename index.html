@@ -1,9 +1,52 @@
 <html>
     <head>
+        <style>
+            #canvas {
+                position:absolute;
+                top:0px;
+                left:0px;
+                z-index:1;
+            }
+
+            label.fileLabel input[type="file"] {
+                position: fixed;
+                top: -1000px;
+            }
+
+            .fileLabel {
+                position:relative;
+                border: 2px solid #AAA;
+                border-radius: 4px;
+                padding: 2px 5px;
+                margin: 2px;
+                background: #DDD;
+                display: inline-block;
+                z-index:1;
+            }
+
+            .fileLabel:hover {
+                background: #CCC;
+            }
+
+            .fileLabel:active {
+                background: #CCF;
+            }
+
+            .fileLabel :valid + span {
+                color: #4A4;
+            }
+
+        </style>
     </head>
     <body>
-        <input type="file" id="file" name="files[]" />
         <canvas id="canvas"></canvas>
+
+        <label class="fileLabel">
+            <input type="file" id="file" name="files[]" />
+            <span>Upload Image</span>
+        </label>
+
+        <script src="point.js"></script>
         <script src="main.js"></script>
     </body>
 </html>

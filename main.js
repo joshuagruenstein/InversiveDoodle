@@ -2,6 +2,7 @@ var img = new Image;
 var c = document.getElementById("canvas");
 var ctx = c.getContext("2d");
 var points = []
+var imageExists = false;
 
 var dragIndex;
 var dragging;
@@ -15,6 +16,7 @@ canvas.height = window.innerHeight;
 canvas.style.width = window.innerWidth;
 canvas.style.height = window.innerHeight;
 
+initCanvas();
 
 function initCanvas() {
     points.push(new DraggablePoint(window.innerWidth/4,window.innerHeight/2)); // Circle center
@@ -22,10 +24,6 @@ function initCanvas() {
     var sizingPoint = new DraggablePoint(window.innerWidth/4-80,window.innerHeight/2);
     sizingPoint.color = "#00cdcd";
     points.push(sizingPoint); // Circle radius
-
-    var aspectRatio = img.height/img.width;
-    points.push(new DraggablePoint(window.innerWidth/2,window.innerHeight/2-aspectRatio*100)); // Image topleft
-    points.push(new DraggablePoint(window.innerWidth/2+200,window.innerHeight/2+aspectRatio*100)); // Image bottomright
 
     c.addEventListener("mousedown", mouseDownListener, false);
 
@@ -46,30 +44,36 @@ function onPointChange() {
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // draw original image
-    var aspectRatio = img.height/img.width;
-    ctx.drawImage(img, points[2].x, points[2].y, points[3].x-points[2].x, points[3].y-points[2].y);
+    if (imageExists) {
+        // draw original image
+        var aspectRatio = img.height/img.width;
+        ctx.drawImage(img, points[2].x, points[2].y, points[3].x-points[2].x, points[3].y-points[2].y);
 
-    // invert image
+        // invert image
 
-    // NOTE: CAN'T HANDLE FLIPPING
-    var imageData = ctx.getImageData(0,0,c.width,c.height);
-    for (var x = Math.round(points[2].x); x < points[3].x; x++) {
-        for (var y = Math.round(points[2].y); y < points[3].y; y++) {
-            var r = imageData.data[(y*c.width + x)*4];
-            var g = imageData.data[(y*c.width + x)*4 + 1];
-            var b = imageData.data[(y*c.width + x)*4 + 2];
+        // NOTE: CAN'T HANDLE FLIPPING
+        var imageData = ctx.getImageData(0,0,c.width,c.height);
+        for (var x = Math.round(points[2].x); x < points[3].x; x++) {
+            for (var y = Math.round(points[2].y); y < points[3].y; y++) {
+                var r = imageData.data[(y*c.width + x)*4];
+                var g = imageData.data[(y*c.width + x)*4 + 1];
+                var b = imageData.data[(y*c.width + x)*4 + 2];
 
-            var newPoint = invertPoint(points[0].x,points[0].y,radius,x,y);
-            var arrayIndex = (newPoint.y*c.width + newPoint.x)*4;
-            imageData.data[arrayIndex] = r;
-            imageData.data[arrayIndex+1] = g;
-            imageData.data[arrayIndex+2] = b;
-        }
-    } ctx.putImageData(imageData,0,0);
+                var newPoint = invertPoint(points[0].x,points[0].y,radius,x,y);
+                var arrayIndex = (newPoint.y*c.width + newPoint.x)*4;
+                    if (arrayIndex < imageData.data.length) {
+                    imageData.data[arrayIndex] = r;
+                    imageData.data[arrayIndex+1] = g;
+                    imageData.data[arrayIndex+2] = b;
+                }
+            }
+        } ctx.putImageData(imageData,0,0);
+    }
 
     // draw points
-    for (var i=0; i<points.length; i++) points[i].drawToContext(ctx);
+    for (var i=0; i<points.length; i++) {
+        points[i].drawToContext(ctx);
+    }
 }
 
 function invertPoint(circleX, circleY, circleRadius, pointX, pointY) {
@@ -80,49 +84,18 @@ function invertPoint(circleX, circleY, circleRadius, pointX, pointY) {
     };
 }
 
-function DraggablePoint(posX, posY) {
-     this.x = posX;
-     this.y = posY;
-     this.color = "#FF0000";
-     this.radius = 5;
-}
-
-DraggablePoint.prototype.drawToContext = function(theContext) {
-    theContext.fillStyle = "#000000";
-    theContext.beginPath();
-    theContext.arc(this.x, this.y, this.radius, 0, 2*Math.PI, false);
-    theContext.closePath();
-    theContext.fill();
-
-    theContext.fillStyle = this.color;
-    theContext.beginPath();
-    theContext.arc(this.x, this.y, this.radius-1, 0, 2*Math.PI, false);
-    theContext.closePath();
-    theContext.fill();
-}
-
-DraggablePoint.prototype.hitTest = function(hitX,hitY) {
-     var dx = this.x - hitX;
-     var dy = this.y - hitY;
-     return(dx*dx + dy*dy < this.radius*this.radius);
-}
 
 function mouseDownListener(evt) {
-	//We are going to pay attention to the layering order of the objects so that if a mouse down occurs over more than object,
-	//only the topmost one will be dragged.
 	var highestIndex = -1;
 
-	//getting mouse position correctly, being mindful of resizing that may have occured in the browser:
 	var bRect = c.getBoundingClientRect();
 	mouseX = (evt.clientX - bRect.left)*(c.width/bRect.width);
 	mouseY = (evt.clientY - bRect.top)*(c.height/bRect.height);
 
-	//find which shape was clicked
 	for (var i=0; i < points.length; i++) {
 		if	(points[i].hitTest(mouseX, mouseY)) {
 			dragging = true;
 			if (i > highestIndex) {
-				//We will pay attention to the point on the object where the mouse is "holding" the object:
 				dragHoldX = mouseX - points[i].x;
 				dragHoldY = mouseY - points[i].y;
 				highestIndex = i;
@@ -157,7 +130,7 @@ function mouseMoveListener(evt) {
 	var maxX = c.width - shapeRad;
 	var minY = shapeRad;
 	var maxY = c.height - shapeRad;
-	//getting mouse position correctly
+
 	var bRect = c.getBoundingClientRect();
 	mouseX = (evt.clientX - bRect.left)*(c.width/bRect.width);
 	mouseY = (evt.clientY - bRect.top)*(c.height/bRect.height);
@@ -184,7 +157,20 @@ function handleFileSelect(evt) {
             return function(e) {
                 img = new Image;
                 img.src = e.target.result;
-                initCanvas();
+
+                var aspectRatio = img.height/img.width;
+
+                if (points.length > 2) {
+                    points.pop();
+                    points.pop();
+                }
+
+                points.push(new DraggablePoint(window.innerWidth/2,window.innerHeight/2-aspectRatio*100)); // Image topleft
+                points.push(new DraggablePoint(window.innerWidth/2+200,window.innerHeight/2+aspectRatio*100)); // Image bottomright
+                imageExists = true;
+
+
+                onPointChange();
             };
         })(f); reader.readAsDataURL(f);
     } else {
