@@ -1,4 +1,4 @@
-var img = new Image;
+var img = new Image();
 var c = document.getElementById("canvas");
 var ctx = c.getContext("2d");
 var points = []
@@ -85,22 +85,21 @@ function handleFileSelect(evt) {
         var reader = new FileReader();
         reader.onload = (function(theFile) {
             return function(e) {
-                img = new Image;
-                img.src = e.target.result;
+                img = new Image();
+                img.onload = function () {
+                    var aspectRatio = img.height/img.width;
 
-                var aspectRatio = img.height/img.width;
+                    while (points.length > 2) {
+                        points.pop();
+                        points.pop();
+                    }
 
-                if (points.length > 2) {
-                    points.pop();
-                    points.pop();
-                }
+                    points.push(new DraggablePoint(window.innerWidth/2,window.innerHeight/2-aspectRatio*100)); // Image topleft
+                    points.push(new DraggablePoint(window.innerWidth/2+200,window.innerHeight/2+aspectRatio*100)); // Image bottomright
+                    imageExists = true;
 
-                points.push(new DraggablePoint(window.innerWidth/2,window.innerHeight/2-aspectRatio*100)); // Image topleft
-                points.push(new DraggablePoint(window.innerWidth/2+200,window.innerHeight/2+aspectRatio*100)); // Image bottomright
-                imageExists = true;
-
-
-                onPointChange();
+                    onPointChange();
+                } img.src = e.target.result;
             };
         })(f); reader.readAsDataURL(f);
     } else {
