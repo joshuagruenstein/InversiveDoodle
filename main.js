@@ -99,8 +99,10 @@ function handleFileSelect(evt) {
                     imageExists = true;
 
                     onPointChange();
-                } img.src = e.target.result;
-            };
+                }
+
+                img.src = e.target.result;
+            }
         })(f); reader.readAsDataURL(f);
     } else {
         // ERROR
