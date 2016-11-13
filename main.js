@@ -98,7 +98,7 @@ function handleFileSelect(evt) {
                     points.push(new DraggablePoint(window.innerWidth/2+200,window.innerHeight/2+aspectRatio*100)); // Image bottomright
                     imageExists = true;
 
-                    onPointChange();
+                    setInterval(onPointChange, 50);
                 }
 
                 img.src = e.target.result;

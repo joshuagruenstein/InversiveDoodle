@@ -1,50 +1,51 @@
+<!DOCTYPE html>
 <html>
     <head>
-        <style>
-            #canvas {
-                position:absolute;
-                top:0px;
-                left:0px;
-                z-index:1;
-            }
+        <link rel="stylesheet" type="text/css" href="main.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/contrib/auto-render.min.js"></script>
 
-            label.fileLabel input[type="file"] {
-                position: fixed;
-                top: -1000px;
-            }
-
-            .fileLabel {
-                position:relative;
-                border: 2px solid #AAA;
-                border-radius: 4px;
-                padding: 2px 5px;
-                margin: 2px;
-                background: #DDD;
-                display: inline-block;
-                z-index:1;
-            }
-
-            .fileLabel:hover {
-                background: #CCC;
-            }
-
-            .fileLabel:active {
-                background: #CCF;
-            }
-
-            .fileLabel :valid + span {
-                color: #4A4;
-            }
-
-        </style>
+        <title>Inversive Doodle</title>
     </head>
     <body>
         <canvas id="canvas"></canvas>
 
-        <label class="fileLabel">
+        <label class="button fileLabel">
             <input type="file" id="file" name="files[]" />
             <span>Upload Image</span>
         </label>
+
+        <label class="button modalOpener" onclick="openModal();">
+            <span>Explanation</span>
+        </label>
+
+        <div class="overlay is-hidden" id="overlay">
+            <div class="modal-content">
+                <span class="button-close" onclick="closeModal();"></span>
+                <h3>Doodle Explanation</h3>
+                <p>This doodle was created using HTML, CSS, and Javascript to demonstrate inversion of arbitrary structures by allowing users to upload their own images to invert.  These images can be in either the <i>JPEG</i>, <i>PNG</i>, or <i>GIF</i> format.  Points define the bounds of the image, the center of the sphere, and its radius, and can be moved in a fashion modeled after Geometer's Sketchpad.</p>
+                <p>Each pixel is inverted w.r.t the drawn circle every 50 milliseconds, in addition to whenever the points are moved.  This is done to support animated GIFs.  The function to invert a pixel is shown below:</p>
+                <script src="https://gist.github.com/joshuagruenstein/ad5fe221a33662193f9303746035beca.js"></script>
+                <p>The function takes in the coordinates of the circle center, its radius, and the point to be inverted, and returns the new point.  This was arrived at through the following methodology.  Imagine we have a circle \(c\) centered at \((0,0)\) with radius \(r\), and point \(P\) at \((x,y)\) with its inverse \(P'\) at \((x',y')\).  As the circle is centered at the origin, \((x',y') = \alpha(x,y)\), where \(\alpha\) is an arbitrary positive constant.  As \(OP \times OP'=r^2\), therefore the following must be true:</p>
+                $$\alpha = \frac{r^2}{x^2 + y^2}$$
+                <p>If we were to allow \(c\) to be centered at arbitrary point \((h,k)\), \(x'=\alpha (x-h) + h\), while \(y'=\alpha (y-k) + k\) where \(\alpha\) is equal to the following:
+                $$\alpha = \frac{r^2}{(x-h)^2 + (y-k)^2}$$
+                <p>In total, the source code is 258 lines long, with the only external dependency being the \(\KaTeX\) renderer.  It can be found <a href="https://github.com/joshuagruenstein/InversiveDoodle">here</a>.</p>
+            </div>
+        </div>
+
+        <script>
+            var overlay = document.getElementById('overlay');
+            renderMathInElement(overlay);
+
+            function openModal() {
+                overlay.classList.remove("is-hidden");
+            }
+            function closeModal() {
+                overlay.classList.add("is-hidden");
+            }
+        </script>
 
         <script src="drag.js"></script>
         <script src="point.js"></script>
