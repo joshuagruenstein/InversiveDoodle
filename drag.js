@@ -61,8 +61,17 @@ function mouseMoveListener(evt) {
 	posY = mouseY - dragHoldY;
 	posY = (posY < minY) ? minY : ((posY > maxY) ? maxY : posY);
 
-	points[dragIndex].x = posX;
-	points[dragIndex].y = posY;
+	// make sure 2.x < 3.x, 2.y < 3.y
+	if (dragIndex == 2) {
+		if (posX <= points[3].x) points[2].x = posX;
+		if (posY <= points[3].y) points[2].y = posY;
+	} else if (dragIndex == 3) {
+		if (points[2].x <= posX) points[3].x = posX;
+		if (points[2].y <= posY) points[3].y = posY;
+	} else {
+		points[dragIndex].x = posX;
+		points[dragIndex].y = posY;
+	}
 
 	onPointChange();
 }
